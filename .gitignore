@@ -1,0 +1,60 @@
+# Python environments and generated caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local secrets and authentication (commit only sanitized examples)
+.env
+.env.*
+!.env.example
+!.env.template
+.aws/
+.ssh/
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+*.ppk
+*cookie*.txt
+*cookie*.json
+*cookies*.sqlite
+*.har
+
+# SQLite data and transaction files; keep schema.sql and db.py
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Downloaded data, generated artifacts and temporary files
+/exports/
+/output/
+/tmp/
+/data/
+*.log
+*.tmp
+
+# Local tooling and OS files
+.codex/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Future frontend dependencies
+node_modules/
