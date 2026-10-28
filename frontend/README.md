@@ -74,7 +74,7 @@ The API needs to return the same shape as `latest.json`: an object with a `rows`
 
 ### Item pages and Steam history
 
-Each item has a page at `#/item/<name>`. Click an item in the market table, or on the Price Movements page. It shows the current Skinport price next to a chart of Steam sale history. The history comes from `public/data/history/`, written by `loader/steam_history.py --site ../frontend/public/data`.
+Each item has a page at `#/item/<name>`. Click an item in the market table, or on the Price Movements page. It shows the current Skinport price next to a chart of Steam sale history. The history comes from `public/data/history/`, written by `loader/convert_history.py --site ../frontend/public/data`.
 
 Game updates show as lines on the chart once `public/data/events.json` exists:
 

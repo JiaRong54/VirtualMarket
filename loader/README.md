@@ -45,18 +45,28 @@ S3 runs use your normal AWS credentials (`aws configure`). The IAM user needs `s
 
 Writing `latest.json` into `frontend/public/data/` makes the dashboard table show those rows on the next page load.
 
-## Steam price history (Jerome's files)
+## Steam price history (from Jerome's downloader)
 
-`steam_history.py` converts saved Steam price history files: the `{"prices": [["Aug 14 2014 01: +0", 3.271, "420"], ...]}` response, one file per item. Each point is a date, the median sale price, and the number sold. These are sales, not listings, so they get their own table.
+Jerome's `backend/steam_history.py` downloads Steam price history into `backend/db/steam_history.db`. `convert_history.py` turns that into chart data for the site and rows for the database. Each point is a date, the median sale price, and the number sold. These are sales, not listings, so they get their own table instead of `price_observations`.
+
+From the repo root:
 
 ```bash
-python steam_history.py --in path/to/steam_files --site ../frontend/public/data --csv steam_rows.csv
+python3 loader/convert_history.py --in backend/db/steam_history.db --site frontend/public/data --csv loader/steam_rows.csv
 ```
+
+It reads any of these:
+
+- the downloader database (`history_items`; items not downloaded yet are skipped)
+- the downloader's export: `python3 backend/steam_history.py --export exports/steam_history.jsonl`
+- single saved Steam responses, one `.json` file per item
+
+Outputs:
 
 - `--site` writes `history/index.json` plus one small file per item, one point per day. Each item then gets a chart on the site, and the Price Movements page lists them.
 - `--csv` writes every raw point (`item_name, game, timestamp, median_price_minor, volume_sold, source`) for the database.
 
-The item name comes from `market_hash_name`, `name`, `item_name` or `hash_name` in the file, else the file name. Files that aren't price history are skipped and counted. Steam reports prices in the account's currency, so check `price_prefix` is `$`.
+Steam reports prices in the account's wallet currency. Anything that isn't US dollars is skipped and counted. The database file is git-ignored, so it moves between laptops by sharing the file or the export.
 
 ## Next
 

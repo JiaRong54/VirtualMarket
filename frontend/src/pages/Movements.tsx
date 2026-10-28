@@ -52,7 +52,7 @@ export function Movements() {
         ) : (
           <div className="empty-state">
             <strong>No price history loaded yet</strong>
-            <span>Run loader/steam_history.py on the saved Steam files. Each item then gets a chart.</span>
+            <span>Run loader/convert_history.py on the downloaded Steam history. Each item then gets a chart.</span>
           </div>
         )}
       </section>

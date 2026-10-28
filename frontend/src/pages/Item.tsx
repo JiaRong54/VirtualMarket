@@ -125,7 +125,7 @@ export function Item() {
           <div className="empty-state">
             <strong>No Steam history loaded for this item</strong>
             <span>
-              Run loader/steam_history.py on the saved Steam files to add it. Items with history are
+              Run loader/convert_history.py on the downloaded Steam history to add it. Items with history are
               listed on the Price Movements page.
             </span>
           </div>
