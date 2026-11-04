@@ -18,7 +18,7 @@ from steam_history import DownloadError, SteamClient, initialize, validate_histo
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'loader'))
 from load_steam import make_snapshot, read_cloud, read_market, write_snapshot
-from convert_history import parse_record, to_daily
+from convert_history import parse_record, to_daily, movement_stats
 
 GAMES = {730: 'cs2'}
 
@@ -202,7 +202,7 @@ def publish(db, market_db, web_data):
                 target = web_data / 'history' / filename
                 if not target.exists():
                     write_snapshot(payload, target)
-                index.append(dict(item_name=name, game=game, file=filename, days=len(daily), first=daily[0][0], last=daily[-1][0]))
+                index.append(dict(item_name=name, game=game, file=filename, days=len(daily), first=daily[0][0], last=daily[-1][0], **movement_stats(daily)))
             except (ValueError, TypeError, KeyError, AttributeError, OverflowError):
                 continue
     # New item files exist before the index references them. A failed run cannot

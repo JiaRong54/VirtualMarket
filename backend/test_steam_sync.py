@@ -70,6 +70,9 @@ class SyncTests(unittest.TestCase):
             self.assertEqual(result,dict(website_items=1,website_histories=1))
             self.assertEqual(json.loads((dest/'steam-latest.json').read_text())['rows'][0]['lowest_price_minor'],29)
             index=json.loads((dest/'history/index.json').read_text())
+            self.assertEqual(index['items'][0]['price'], 999)
+            self.assertEqual(index['items'][0]['sold_7d'], 5)
+            self.assertEqual(index['items'][0]['prev'], {'1': None, '7': None, '30': None})
             self.assertEqual(json.loads((dest/'history'/index['items'][0]['file']).read_text())['points'][0][1],999)
 
     def test_dota_is_preserved_in_database_but_removed_from_website(self):

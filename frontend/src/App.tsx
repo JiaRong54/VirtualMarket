@@ -9,10 +9,10 @@ import { Item } from './pages/Item'
 // HashRouter keeps the page name after a # in the URL (/#/profile).
 // The part after # never reaches the server, so any static host
 // (S3, GitHub Pages) serves index.html for every page with no extra setup.
-function MarketPage() {
+function MarketPage({ movements = false }: { movements?: boolean }) {
   const [params] = useSearchParams()
   const game = params.get('game') === 'dota2' ? 'dota2' : 'cs2'
-  return <Dashboard key={game} game={game} />
+  return movements ? <Movements key={game} game={game} /> : <Dashboard key={game} game={game} />
 }
 
 export default function App() {
@@ -24,7 +24,7 @@ export default function App() {
           <Route path="dota2" element={<Navigate to="/?game=dota2" replace />} />
           <Route path="dota2/item/:name" element={<Item key="dota2-item" game="dota2" />} />
           <Route path="compare" element={<Compare />} />
-          <Route path="movements" element={<Movements />} />
+          <Route path="movements" element={<MarketPage movements />} />
           <Route path="profile" element={<Profile />} />
           <Route path="item/:name" element={<Item />} />
           <Route path="*" element={<Navigate to="/" replace />} />

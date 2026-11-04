@@ -39,7 +39,7 @@ import re
 import sqlite3
 import sys
 from collections import OrderedDict
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -193,6 +193,31 @@ def to_daily(points):
         daily.append([day, to_cents(weighted / 100), sold])
     return daily
 
+# Windows for the Price Movements page, in days.
+MOVE_WINDOWS = (1, 7, 30)
+
+
+def movement_stats(daily):
+    """
+    Daily points -> how much the price moved, for the Price Movements page.
+
+    price:   the last day's price in cents
+    prev:    {"1": cents, "7": cents, "30": cents}, the price on the latest
+             day at least that many days before the last day. null when the
+             history doesn't go back that far.
+    sold_7d: units sold over the last 7 days, so the page can hide items
+             that barely trade (a single sale can move their price 50%).
+    """
+    last_day = date.fromisoformat(daily[-1][0])
+    prev = {}
+    for window in MOVE_WINDOWS:
+        cutoff = (last_day - timedelta(days=window)).isoformat()
+        before = [cents for day, cents, _ in daily if day <= cutoff]
+        prev[str(window)] = before[-1] if before else None
+
+    week_start = (last_day - timedelta(days=6)).isoformat()
+    sold_7d = sum(sold for day, _, sold in daily if day >= week_start)
+    return {"price": daily[-1][1], "prev": prev, "sold_7d": sold_7d}
 
 def site_filename(name):
     """Safe, unique file name for an item. Names contain | and ★, which files can't."""
@@ -264,6 +289,7 @@ def convert(inputs, site_dir=None, csv_path=None, default_game="cs2"):
                         "days": len(daily),
                         "first": daily[0][0],
                         "last": daily[-1][0],
+                        **movement_stats(daily),
                     })
     finally:
         if csv_file:

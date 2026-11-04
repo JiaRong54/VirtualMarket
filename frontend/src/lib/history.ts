@@ -11,6 +11,11 @@ export interface HistoryIndexEntry {
   days: number
   first: string
   last: string
+  // Added by convert_history.py for the Price Movements page.
+  // Missing in an index.json made before that, so they are optional.
+  price?: number // last day's price, in cents
+  prev?: Record<string, number | null> // price 1, 7 and 30 days before the last day
+  sold_7d?: number // units sold over the last 7 days
 }
 
 export interface ItemHistory {
