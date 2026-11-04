@@ -11,15 +11,9 @@ export interface Section {
 export const SECTIONS: Section[] = [
   {
     path: '/',
-    label: 'CS2 Market',
+    label: 'Dashboard',
     icon: 'dashboard',
     blurb: 'Market overview and the main price table',
-  },
-  {
-    path: '/dota2',
-    label: 'Dota 2 Market',
-    icon: 'dashboard',
-    blurb: 'Dota 2 items and Steam Market prices',
   },
   {
     path: '/compare',

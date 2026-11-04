@@ -1,12 +1,13 @@
-import { NavLink, Outlet, useLocation } from 'react-router'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { PIPELINE, SECTIONS } from '../config'
 import { Icon } from './Icon'
 
 // The frame every page sits inside: sidebar on the left, top bar,
 // and an <Outlet /> where the current page is drawn.
 export function Layout() {
-  const { pathname } = useLocation()
-  const dota = pathname.startsWith('/dota2')
+  const { pathname, search } = useLocation()
+  const navigate = useNavigate()
+  const dota = pathname.startsWith('/dota2') || new URLSearchParams(search).get('game') === 'dota2'
   const current = (pathname.startsWith('/item/') || pathname.startsWith('/dota2/item/'))
     ? { label: 'Item details', blurb: 'Steam sales history and the latest observed Steam listing price' }
     : (SECTIONS.find((s) => s.path === pathname) ?? SECTIONS[0])
@@ -21,7 +22,7 @@ export function Layout() {
 
         <nav className="nav" aria-label="Sections">
           {SECTIONS.map((s) => (
-            <NavLink key={s.path} to={s.path} end={s.path === '/'} className="nav-link">
+            <NavLink key={s.path} to={s.path === '/' && dota ? '/?game=dota2' : s.path} end={s.path === '/'} className="nav-link">
               <Icon name={s.icon} />
               {s.label}
             </NavLink>
@@ -54,7 +55,12 @@ export function Layout() {
           </div>
           <div className="topbar-tools">
             <div className="game-switch" role="group" aria-label="Game">
-              <span className="on">{dota ? 'Dota 2' : 'CS2'}</span>
+              <button type="button" className={!dota ? 'on' : ''} aria-pressed={!dota} onClick={() => navigate('/?game=cs2')}>
+                CS2
+              </button>
+              <button type="button" className={dota ? 'on' : ''} aria-pressed={dota} onClick={() => navigate('/?game=dota2')}>
+                DOTA 2
+              </button>
             </div>
             <input className="search" type="search" placeholder="Search items" disabled />
           </div>

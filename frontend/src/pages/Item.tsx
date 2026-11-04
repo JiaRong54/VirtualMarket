@@ -79,7 +79,7 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
   return (
     <>
       <div className="item-head">
-        <Link to={game === 'dota2' ? '/dota2' : '/'} className="back-link">
+        <Link to={game === 'dota2' ? '/?game=dota2' : '/?game=cs2'} className="back-link">
           Back to market
         </Link>
         <h2>{name}</h2>
