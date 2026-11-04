@@ -61,7 +61,7 @@ def set_state(conn, key, value):
 
 def fetch_page(conn, client, appid, current):
     if appid not in GAMES:
-        raise ValueError('Only CS2 collection is enabled')
+        raise ValueError(f'App ID {appid} is not enabled for this run; enabled app IDs: {sorted(GAMES)}')
     prefix = str(appid)
     if get_state(conn, prefix + ':after') > stamp(current):
         return 0
