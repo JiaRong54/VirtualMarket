@@ -4,22 +4,22 @@
 export interface Section {
   path: string
   label: string
-  icon: 'dashboard' | 'watchlist' | 'compare' | 'movements' | 'profile'
+  icon: 'dashboard' | 'compare' | 'movements' | 'profile'
   blurb: string
 }
 
 export const SECTIONS: Section[] = [
   {
     path: '/',
-    label: 'Dashboard',
+    label: 'CS2 Market',
     icon: 'dashboard',
     blurb: 'Market overview and the main price table',
   },
   {
-    path: '/watchlist',
-    label: 'Watchlist',
-    icon: 'watchlist',
-    blurb: 'Items you follow, refreshed more often',
+    path: '/dota2',
+    label: 'Dota 2 Market',
+    icon: 'dashboard',
+    blurb: 'Dota 2 items and Steam Market prices',
   },
   {
     path: '/compare',
@@ -43,7 +43,7 @@ export const SECTIONS: Section[] = [
 
 // Facts about the pipeline that are true today. Shown in the sidebar.
 export const PIPELINE = {
-  source: 'Skinport',
-  refresh: 'Hourly',
+  source: 'Steam Market',
+  refresh: 'Latest observations',
   game: 'CS2',
 }

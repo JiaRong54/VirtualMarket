@@ -1,3 +1,4 @@
+import type { Game } from '../types/market'
 // Steam price history, written by loader/steam_history.py into public/data/history/.
 
 /** [date "2014-08-14", median sale price in cents, number sold that day] */
@@ -29,7 +30,7 @@ const BASE = './data'
 
 async function getJson<T>(url: string, signal?: AbortSignal): Promise<T | null> {
   try {
-    const res = await fetch(url, { signal })
+    const res = await fetch(url, { signal, cache: 'no-cache' })
     if (!res.ok) return null
     return (await res.json()) as T
   } catch {
@@ -38,14 +39,14 @@ async function getJson<T>(url: string, signal?: AbortSignal): Promise<T | null> 
   }
 }
 
-export async function loadHistoryIndex(signal?: AbortSignal): Promise<HistoryIndexEntry[]> {
-  const data = await getJson<{ items?: HistoryIndexEntry[] }>(`${BASE}/history/index.json`, signal)
-  return Array.isArray(data?.items) ? data.items : []
+export async function loadHistoryIndex(signal?: AbortSignal, game: Game = 'cs2'): Promise<HistoryIndexEntry[]> {
+  const data = await getJson<{ items?: HistoryIndexEntry[] }>(`${BASE}${game === 'dota2' ? '/dota2' : ''}/history/index.json`, signal)
+  return Array.isArray(data?.items) ? data.items.filter((item) => item.game === game) : []
 }
 
-export async function loadItemHistory(file: string, signal?: AbortSignal): Promise<ItemHistory | null> {
-  const data = await getJson<ItemHistory>(`${BASE}/history/${encodeURIComponent(file)}`, signal)
-  return data && Array.isArray(data.points) ? data : null
+export async function loadItemHistory(file: string, signal?: AbortSignal, game: Game = 'cs2'): Promise<ItemHistory | null> {
+  const data = await getJson<ItemHistory>(`${BASE}${game === 'dota2' ? '/dota2' : ''}/history/${encodeURIComponent(file)}`, signal)
+  return data && data.game === game && Array.isArray(data.points) ? data : null
 }
 
 export async function loadEvents(signal?: AbortSignal): Promise<UpdateEvent[]> {
@@ -54,6 +55,6 @@ export async function loadEvents(signal?: AbortSignal): Promise<UpdateEvent[]> {
 }
 
 /** Link to an item's page. Names contain | and spaces, so they are encoded. */
-export function itemPath(name: string): string {
-  return `/item/${encodeURIComponent(name)}`
+export function itemPath(name: string, game: Game = 'cs2'): string {
+  return `${game === 'dota2' ? '/dota2' : ''}/item/${encodeURIComponent(name)}`
 }

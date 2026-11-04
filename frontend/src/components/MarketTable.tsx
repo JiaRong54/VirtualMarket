@@ -1,12 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
-import type { PriceObservation } from '../types/market'
+import type { Game, PriceObservation } from '../types/market'
 import { formatAge, formatCount, formatPrice } from '../lib/format'
 import { itemPath } from '../lib/history'
 
 interface MarketTableProps {
+  game?: Game
   rows: PriceObservation[]
-  /** Items in the whole snapshot; rows may be only the top slice. */
-  total?: number
 }
 
 const COLUMNS = ['Item', 'Game', 'Lowest price', 'Listings', 'Source', 'Updated']
@@ -15,18 +15,22 @@ const SKELETON_ROWS = 8
 
 // The main market table. Give it rows and it draws them.
 // Give it an empty list and it draws the placeholder.
-export function MarketTable({ rows, total = rows.length }: MarketTableProps) {
+export function MarketTable({ rows, game = 'cs2' }: MarketTableProps) {
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const empty = rows.length === 0
+  const pages = Math.max(1, Math.ceil(rows.length / pageSize))
+  const currentPage = Math.min(page, pages)
+  const start = (currentPage - 1) * pageSize
+  const visibleRows = rows.slice(start, start + pageSize)
   const label = empty
     ? 'awaiting data'
-    : rows.length < total
-      ? `top ${formatCount(rows.length)} of ${formatCount(total)} by price`
-      : `${formatCount(rows.length)} items`
+    : `${formatCount(start + 1)}–${formatCount(start + visibleRows.length)} of ${formatCount(rows.length)} items`
 
   return (
     <section className="card table-card">
       <div className="card-head">
-        <h2>CS2 market</h2>
+        <h2>{game === 'dota2' ? 'Dota 2' : 'CS2'} Steam Market</h2>
         <span className="pill">{label}</span>
       </div>
 
@@ -57,10 +61,10 @@ export function MarketTable({ rows, total = rows.length }: MarketTableProps) {
                     ))}
                   </tr>
                 ))
-              : rows.map((r) => (
+              : visibleRows.map((r) => (
                   <tr key={`${r.item_name}-${r.timestamp}`}>
                     <td className="item">
-                      <Link to={itemPath(r.item_name)} className="item-link">
+                      <Link to={itemPath(r.item_name, game)} className="item-link">
                         {r.item_name}
                       </Link>
                     </td>
@@ -69,7 +73,7 @@ export function MarketTable({ rows, total = rows.length }: MarketTableProps) {
                     </td>
                     <td className="num">{formatPrice(r.lowest_price_minor)}</td>
                     <td className="num">{formatCount(r.listing_count)}</td>
-                    <td className="muted">{r.source}</td>
+                    <td className="muted">{r.source === 'steam_community_overview' || r.source === 'steam_community_search' ? 'Steam Market' : r.source}</td>
                     <td className="muted">{formatAge(r.timestamp)}</td>
                   </tr>
                 ))}
@@ -78,14 +82,34 @@ export function MarketTable({ rows, total = rows.length }: MarketTableProps) {
 
         {empty && (
           <div className="table-overlay">
-            <strong>Market table goes here</strong>
+            <strong>No Steam listing prices available yet</strong>
             <span>
-              Rows appear once a snapshot is loaded. Run the loader to write
-              public/data/latest.json, or point VITE_PRICES_URL at the API.
+              Prices will appear after Steam Market observations are published.
+              Historical sale prices are shown separately on item pages.
             </span>
           </div>
         )}
       </div>
+      {!empty && (
+        <nav className="market-pagination" aria-label="Market table pagination">
+          <label>
+            Items per page{' '}
+            <select value={pageSize} onChange={(event) => {
+              setPageSize(Number(event.target.value))
+              setPage(1)
+            }}>
+              {[10, 25, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
+            </select>
+          </label>
+          <div className="market-page-buttons">
+            <button type="button" disabled={currentPage === 1} onClick={() => setPage(1)}>First</button>
+            <button type="button" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Previous</button>
+            <span aria-live="polite">Page {formatCount(currentPage)} of {formatCount(pages)}</span>
+            <button type="button" disabled={currentPage === pages} onClick={() => setPage(currentPage + 1)}>Next</button>
+            <button type="button" disabled={currentPage === pages} onClick={() => setPage(pages)}>Last</button>
+          </div>
+        </nav>
+      )}
     </section>
   )
 }

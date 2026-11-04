@@ -25,8 +25,8 @@ export function formatDay(isoDate: string): string {
 }
 
 /** 21770 -> "21,770" */
-export function formatCount(n: number): string {
-  return count.format(n)
+export function formatCount(n: number | null): string {
+  return n === null ? '--' : count.format(n)
 }
 
 /** (1240, 1364) -> "+10.0%" ; works on cents so there are no float surprises */

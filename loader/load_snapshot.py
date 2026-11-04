@@ -34,8 +34,6 @@ import sys
 from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 
-import brotli
-
 COLUMNS = ["item_name", "game", "timestamp", "lowest_price_minor", "listing_count", "source"]
 GAMES_BY_APP_ID = {"730": "cs2", "570": "dota2"}
 KEY_PATTERN = re.compile(r"^(?P<game>[a-z0-9]+)/(?P<y>\d{4})/(?P<m>\d{2})/(?P<d>\d{2})/(?P<t>\d{6})")
@@ -51,6 +49,7 @@ def to_cents(price):
 
 def decode_body(raw):
     """Snapshots are stored Brotli compressed. Accept plain JSON too."""
+    import brotli
     try:
         return brotli.decompress(raw)
     except brotli.error:

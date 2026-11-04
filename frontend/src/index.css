@@ -796,3 +796,33 @@ p {
     width: 160px;
   }
 }
+
+.market-pagination,
+.market-page-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.market-pagination {
+  padding: 16px 20px;
+  border-top: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.market-pagination button,
+.market-pagination select {
+  padding: 8px 12px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+}
+
+.market-pagination button:not(:disabled) { cursor: pointer; }
+.market-pagination button:disabled { opacity: 0.45; }
+.market-pagination button:focus-visible,
+.market-pagination select:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }

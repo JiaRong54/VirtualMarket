@@ -10,8 +10,8 @@ export interface PriceObservation {
   game: Game
   timestamp: string // ISO 8601 in UTC, e.g. "2026-10-14T16:00:00Z"
   lowest_price_minor: number // whole cents: 1240 means $12.40
-  listing_count: number // how many are for sale right now
-  source: string // where the price came from, e.g. "skinport"
+  listing_count: number | null // null when Steam did not return a listing count
+  source: string // steam_community_overview or steam_community_search
 }
 
 /** One item on a user's watchlist, with the price when it was added. */

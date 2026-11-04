@@ -1,29 +1,36 @@
+import type { Game } from '../types/market'
 import { useEffect, useMemo, useState } from 'react'
 import { MarketTable } from '../components/MarketTable'
 import { loadLatestSnapshot, type Snapshot } from '../lib/api'
 import { formatAge, formatCount } from '../lib/format'
 
-// How many rows the table shows. The full catalog is about 21,000 items.
-const SHOW = 100
-
-export function Dashboard() {
+export function Dashboard({ game = 'cs2' }: { game?: Game }) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
 
-  // Load the latest snapshot once when the page opens.
+  // Pick up cloud-published observations without rebuilding or reloading the page.
   useEffect(() => {
     const controller = new AbortController()
-    loadLatestSnapshot(controller.signal).then((s) => {
-      if (!controller.signal.aborted) setSnapshot(s)
-    })
-    return () => controller.abort()
-  }, [])
+    let pending = false
+    const refresh = async () => {
+      if (pending) return
+      pending = true
+      const next = await loadLatestSnapshot(controller.signal, game)
+      if (!controller.signal.aborted && next) setSnapshot(next)
+      pending = false
+    }
+    void refresh()
+    const timer = window.setInterval(() => void refresh(), 60_000)
+    return () => {
+      controller.abort()
+      window.clearInterval(timer)
+    }
+  }, [game])
 
-  // Most expensive first, top 100.
+  // Keep the full catalog; the table paginates it.
   const rows = useMemo(() => {
     if (!snapshot) return []
     return [...snapshot.rows]
       .sort((a, b) => b.lowest_price_minor - a.lowest_price_minor)
-      .slice(0, SHOW)
   }, [snapshot])
 
   const tiles = [
@@ -33,17 +40,16 @@ export function Dashboard() {
       note: 'from the latest snapshot',
     },
     {
-      label: 'Last snapshot',
+      label: 'Latest observation',
       value: snapshot?.collected_at ? formatAge(snapshot.collected_at) : '--',
-      note: 'hourly, from Skinport',
+      note: 'Steam Market; each row has its own update time',
     },
     { label: 'Biggest move today', value: '--', note: 'once detection is live' },
-    { label: 'On your watchlist', value: '--', note: 'once login is live' },
   ]
 
   return (
     <>
-      <div className="tiles">
+      <div className="tiles tiles-3">
         {tiles.map((t) => (
           <div className="tile" key={t.label}>
             <span className="tile-label">{t.label}</span>
@@ -53,7 +59,7 @@ export function Dashboard() {
         ))}
       </div>
 
-      <MarketTable rows={rows} total={snapshot?.item_count ?? 0} />
+      <MarketTable rows={rows} game={game} />
     </>
   )
 }

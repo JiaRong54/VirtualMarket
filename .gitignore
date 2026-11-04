@@ -58,3 +58,7 @@ Desktop.ini
 
 # Future frontend dependencies
 node_modules/
+
+# Published market data stays in AWS/local storage, not Git.
+/frontend/public/data/*
+!/frontend/public/data/.gitkeep

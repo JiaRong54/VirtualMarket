@@ -10,6 +10,7 @@ import sqlite3
 import sys
 import time
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -19,7 +20,10 @@ DEFAULT_DB = Path(__file__).resolve().parent / 'db' / 'steam_history.db'
 
 
 class DownloadError(RuntimeError):
-    pass
+    def __init__(self, message, kind='item', retry_after=0):
+        super().__init__(message)
+        self.kind = kind
+        self.retry_after = retry_after
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -48,17 +52,38 @@ class SteamClient:
         except HTTPError as exc:
             if exc.code == 429:
                 retry = exc.headers.get('Retry-After', 'not specified')
-                raise DownloadError('Steam rate limit (429). Retry-After: {}. Resume later.'.format(retry)) from None
+                try:
+                    seconds = max(0, int(retry))
+                except ValueError:
+                    try:
+                        seconds = max(0, (parsedate_to_datetime(retry) - datetime.now(timezone.utc)).total_seconds())
+                    except (TypeError, ValueError, OverflowError):
+                        seconds = 0
+                raise DownloadError('Steam rate limit (429). Retry-After: {}. Resume later.'.format(retry),
+                                    kind='rate_limit', retry_after=seconds) from None
             if exc.code in (401, 403, 302, 301):
-                raise DownloadError('Steam denied access or requires login. Refresh your own session and resume.') from None
-            raise DownloadError('Steam HTTP {}; progress retained.'.format(exc.code)) from None
+                raise DownloadError('Steam denied access or requires login. Refresh your own session and resume.', kind='auth') from None
+            raise DownloadError('Steam HTTP {}; progress retained.'.format(exc.code),
+                                kind='transient' if exc.code >= 500 else 'item') from None
         except (URLError, TimeoutError, OSError):
-            raise DownloadError('Network request failed; progress retained. Resume later.') from None
+            raise DownloadError('Network request failed; progress retained. Resume later.', kind='transient') from None
         except (ValueError, UnicodeError):
-            raise DownloadError('Steam returned invalid JSON; check login/access before resuming.') from None
+            raise DownloadError('Steam returned invalid JSON; check login/access before resuming.', kind='transient') from None
         if not isinstance(data, dict) or data.get('success') not in (True, 1):
             raise DownloadError('Steam returned an unsuccessful result; check session/item availability and resume.')
         return data
+
+
+def validate_history(data):
+    prices = data.get('prices')
+    if not isinstance(prices, list):
+        raise DownloadError('History response is missing prices; item remains pending.')
+    for row in prices:
+        if (not isinstance(row, list) or len(row) != 3 or not isinstance(row[0], str)
+                or type(row[1]) not in (int, float) or not math.isfinite(row[1]) or row[1] < 0
+                or not str(row[2]).isdigit()):
+            raise DownloadError('Unrecognized history row; item remains pending.')
+    return prices
 
 
 def initialize(conn):
@@ -86,14 +111,7 @@ def download_pending(conn, client, appid):
             return
         game, name = item
         data = client.get('pricehistory', {'appid': game, 'market_hash_name': name, 'l': 'english'})
-        prices = data.get('prices')
-        if not isinstance(prices, list):
-            raise DownloadError('History response is missing prices; item remains pending.')
-        for row in prices:
-            if (not isinstance(row, list) or len(row) != 3 or not isinstance(row[0], str)
-                    or type(row[1]) not in (int, float) or not math.isfinite(row[1]) or row[1] < 0
-                    or not str(row[2]).isdigit()):
-                raise DownloadError('Unrecognized history row; item remains pending.')
+        prices = validate_history(data)
         with conn:
             conn.execute('UPDATE history_items SET fetched_at=?, response_json=? WHERE appid=? AND market_hash_name=?',
                          (datetime.now(timezone.utc).isoformat(), json.dumps(data, ensure_ascii=False, allow_nan=False), game, name))

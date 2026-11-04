@@ -1,3 +1,4 @@
+import type { Game } from '../types/market'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { PriceChart } from '../components/PriceChart'
@@ -21,8 +22,8 @@ interface Loaded {
 }
 
 // One item: Steam sales history (Jerome's data) next to the current
-// Skinport listing (Arian's collector).
-export function Item() {
+// Steam Market listing observation.
+export function Item({ game = 'cs2' }: { game?: Game }) {
   const { name = '' } = useParams()
   const [data, setData] = useState<Loaded | null>(null)
   const [range, setRange] = useState<Range>('ALL')
@@ -34,18 +35,18 @@ export function Item() {
     const { signal } = controller
     ;(async () => {
       const [index, snapshot, events] = await Promise.all([
-        loadHistoryIndex(signal),
-        loadLatestSnapshot(signal),
-        loadEvents(signal),
+        loadHistoryIndex(signal, game),
+        loadLatestSnapshot(signal, game),
+        game === 'cs2' ? loadEvents(signal) : Promise.resolve([]),
       ])
       const entry = index.find((e) => e.item_name === name)
-      const history = entry ? await loadItemHistory(entry.file, signal) : null
+      const history = entry ? await loadItemHistory(entry.file, signal, game) : null
       if (signal.aborted) return
       const listing = snapshot?.rows.find((r) => r.item_name === name) ?? null
       setData({ name, history, listing, events })
     })()
     return () => controller.abort()
-  }, [name])
+  }, [name, game])
 
   const points = useMemo(() => loaded?.history?.points ?? [], [loaded])
   const last = points.at(-1)
@@ -54,14 +55,14 @@ export function Item() {
 
   const tiles = [
     {
-      label: 'Lowest ask now',
+      label: 'Lowest observed ask',
       value: loaded?.listing ? formatPrice(loaded.listing.lowest_price_minor) : '--',
-      note: 'Skinport, latest snapshot',
+      note: 'Steam Market, latest observation',
     },
     {
-      label: 'Listed now',
+      label: 'Observed listings',
       value: loaded?.listing ? formatCount(loaded.listing.listing_count) : '--',
-      note: 'Skinport, latest snapshot',
+      note: 'Steam Market; unavailable counts show --',
     },
     {
       label: 'Last median sale',
@@ -78,11 +79,11 @@ export function Item() {
   return (
     <>
       <div className="item-head">
-        <Link to="/" className="back-link">
+        <Link to={game === 'dota2' ? '/dota2' : '/'} className="back-link">
           Back to market
         </Link>
         <h2>{name}</h2>
-        <span className="tag">{loaded?.history?.game ?? loaded?.listing?.game ?? 'cs2'}</span>
+        <span className="tag">{loaded?.history?.game ?? loaded?.listing?.game ?? game}</span>
       </div>
 
       <div className="tiles">
