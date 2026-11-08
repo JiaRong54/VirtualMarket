@@ -858,3 +858,33 @@ p {
   color: var(--muted);
   font-size: 12px;
 }
+
+.add-bar select {
+  padding: 9px 8px;
+  border: 1px solid var(--grey-light);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--ink);
+  font: 600 13px var(--sans);
+}
+
+.watch-btn {
+  margin-left: auto;
+  padding: 7px 14px;
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--red);
+  font: 600 13px var(--sans);
+  cursor: pointer;
+}
+
+.watch-btn.on {
+  background: var(--red);
+  color: var(--white);
+}
+
+.watch-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
