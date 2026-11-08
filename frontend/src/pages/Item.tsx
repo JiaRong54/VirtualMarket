@@ -13,6 +13,7 @@ import {
   type UpdateEvent,
 } from '../lib/history'
 import type { PriceObservation } from '../types/market'
+import { useWatchlist } from '../lib/watchlist'
 
 interface Loaded {
   name: string // which item this data is for
@@ -27,6 +28,8 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
   const { name = '' } = useParams()
   const [data, setData] = useState<Loaded | null>(null)
   const [range, setRange] = useState<Range>('ALL')
+  const watchlist = useWatchlist()
+  const watching = watchlist.has(name, game)
   // Data for a previously opened item counts as still loading.
   const loaded = data?.name === name ? data : null
 
@@ -37,7 +40,7 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
       const [index, snapshot, events] = await Promise.all([
         loadHistoryIndex(signal, game),
         loadLatestSnapshot(signal, game),
-        game === 'cs2' ? loadEvents(signal) : Promise.resolve([]),
+        loadEvents(signal, game),
       ])
       const entry = index.find((e) => e.item_name === name)
       const history = entry ? await loadItemHistory(entry.file, signal, game) : null
@@ -84,6 +87,19 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
         </Link>
         <h2>{name}</h2>
         <span className="tag">{loaded?.history?.game ?? loaded?.listing?.game ?? game}</span>
+        <button
+          type="button"
+          className={watching ? 'watch-btn on' : 'watch-btn'}
+          aria-pressed={watching}
+          disabled={loaded === null}
+          onClick={() =>
+            watching
+              ? watchlist.remove(name, game)
+              : watchlist.add(name, game, loaded?.listing?.lowest_price_minor ?? points.at(-1)?.[1] ?? null)
+          }
+        >
+          {watching ? 'On watchlist' : 'Add to watchlist'}
+        </button>
       </div>
 
       <div className="tiles">

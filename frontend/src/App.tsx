@@ -5,6 +5,7 @@ import { Compare } from './pages/Compare'
 import { Movements } from './pages/Movements'
 import { Profile } from './pages/Profile'
 import { Item } from './pages/Item'
+import { Watchlist } from './pages/Watchlist'
 
 // HashRouter keeps the page name after a # in the URL (/#/profile).
 // The part after # never reaches the server, so any static host
@@ -23,6 +24,7 @@ export default function App() {
           <Route index element={<MarketPage />} />
           <Route path="dota2" element={<Navigate to="/?game=dota2" replace />} />
           <Route path="dota2/item/:name" element={<Item key="dota2-item" game="dota2" />} />
+          <Route path="watchlist" element={<Watchlist />} />
           <Route path="compare" element={<Compare />} />
           <Route path="movements" element={<MarketPage movements />} />
           <Route path="profile" element={<Profile />} />
