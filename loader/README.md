@@ -72,3 +72,23 @@ Steam reports prices in the account's wallet currency. Anything that isn't US do
 
 - Agree the import with Jerome: his tables use an item id, so his side matches `item_name` to the items table and inserts the price rows.
 - Run the loader automatically: an S3 trigger starts it each time the collector saves a new snapshot.
+
+## Update timeline (`build_events.py`)
+
+`timeline/update_events.csv` lists every CS2 and Dota 2 update, one row each, copied by hand from the official patch notes:
+
+| Column | Example | Notes |
+| --- | --- | --- |
+| date | 2026-10-01 | Day the update went live |
+| game | cs2 | `cs2` or `dota2` |
+| title | Operation release | Shown on the item chart |
+| type | operation | `major`, `case`, `operation`, `balance` or `minor` |
+| link | https://www.counter-strike.net/news/updates | Patch notes, so every row can be checked |
+
+Sources: [CS2 updates](https://www.counter-strike.net/news/updates), [Dota 2 patches](https://www.dota2.com/patches).
+
+```bash
+python loader/build_events.py --csv timeline/update_events.csv --site frontend/public/data
+```
+
+This writes `events.json` (CS2) and `dota2/events.json` (Dota 2). The item charts draw a line on each date. The same CSV is the input for the update correlation study. The script stops and names the line if a row has a bad date, game, type or link.
