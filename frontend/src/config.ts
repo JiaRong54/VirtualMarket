@@ -4,7 +4,7 @@
 export interface Section {
   path: string
   label: string
-  icon: 'dashboard' | 'compare' | 'movements' | 'profile'
+  icon: 'dashboard' | 'watchlist' | 'compare' | 'movements' | 'profile'
   blurb: string
 }
 
@@ -14,6 +14,12 @@ export const SECTIONS: Section[] = [
     label: 'Dashboard',
     icon: 'dashboard',
     blurb: 'Market overview and the main price table',
+  },
+  {
+    path: '/watchlist',
+    label: 'Watchlist',
+    icon: 'watchlist',
+    blurb: 'Items you follow and how far they moved since you added them',
   },
   {
     path: '/compare',

@@ -25,7 +25,7 @@ export interface ItemHistory {
   points: DailyPoint[]
 }
 
-/** A game update to mark on the chart. Jerome's timeline goes in data/events.json. */
+/** A game update to mark on the chart. Written by loader/build_events.py from timeline/update_events.csv. */
 export interface UpdateEvent {
   date: string // "2026-10-01"
   label: string
@@ -54,8 +54,8 @@ export async function loadItemHistory(file: string, signal?: AbortSignal, game: 
   return data && data.game === game && Array.isArray(data.points) ? data : null
 }
 
-export async function loadEvents(signal?: AbortSignal): Promise<UpdateEvent[]> {
-  const data = await getJson<UpdateEvent[]>(`${BASE}/events.json`, signal)
+export async function loadEvents(signal?: AbortSignal, game: Game = 'cs2'): Promise<UpdateEvent[]> {
+  const data = await getJson<UpdateEvent[]>(`${BASE}${game === 'dota2' ? '/dota2' : ''}/events.json`, signal)
   return Array.isArray(data) ? data.filter((e) => e && e.date && e.label) : []
 }
 
