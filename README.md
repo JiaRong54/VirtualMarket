@@ -25,7 +25,7 @@ The website and the collection pipeline exist to answer that question with data.
 | Watchlist with change since added (saved in the browser) | Working |
 | Automatic anomaly detection (unusual moves flagged) | In progress |
 | Update vs. price movement correlation study | In progress |
-| Compare variants of the same skin | Planned |
+| Compare versions of the same skin (wear, StatTrak, quality) | Working |
 | User accounts | Planned |
 
 The site is read-only on purpose. It never buys, sells or trades items.
@@ -162,6 +162,7 @@ The script installs a systemd service and timer, stores data under `backend/db/`
 
 - **Dashboard:** the market table. Switch between CS2 and Dota 2 at the top right. Click an item to open its page.
 - **Item page:** daily median sale price chart with 1 month, 6 months, 1 year and All ranges, update markers, and an **Add to watchlist** button.
+- **Compare:** pick a skin to see every version (wear, StatTrak, Souvenir) in one table and one chart.
 - **Watchlist:** items you follow, their price now, and the change since you added them. Saved in your browser until accounts exist.
 - **Price Movements:** the biggest gains or drops over 1, 7 or 30 days. The sales filter hides items that barely trade, since one sale can move their price 50%.
 

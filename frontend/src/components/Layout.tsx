@@ -22,7 +22,7 @@ export function Layout() {
 
         <nav className="nav" aria-label="Sections">
           {SECTIONS.map((s) => (
-            <NavLink key={s.path} to={dota && (s.path === '/' || s.path === '/movements') ? `${s.path}?game=dota2` : s.path} end={s.path === '/'} className="nav-link">
+            <NavLink key={s.path} to={dota && (s.path === '/' || s.path === '/movements' || s.path === '/compare') ? `${s.path}?game=dota2` : s.path} end={s.path === '/'} className="nav-link">
               <Icon name={s.icon} />
               {s.label}
             </NavLink>
@@ -55,10 +55,10 @@ export function Layout() {
           </div>
           <div className="topbar-tools">
             <div className="game-switch" role="group" aria-label="Game">
-              <button type="button" className={!dota ? 'on' : ''} aria-pressed={!dota} onClick={() => navigate(`${pathname === '/movements' ? '/movements' : '/'}?game=cs2`)}>
+              <button type="button" className={!dota ? 'on' : ''} aria-pressed={!dota} onClick={() => navigate(`${pathname === '/movements' || pathname === '/compare' ? pathname : '/'}?game=cs2`)}>
                 CS2
               </button>
-              <button type="button" className={dota ? 'on' : ''} aria-pressed={dota} onClick={() => navigate(`${pathname === '/movements' ? '/movements' : '/'}?game=dota2`)}>
+              <button type="button" className={dota ? 'on' : ''} aria-pressed={dota} onClick={() => navigate(`${pathname === '/movements' || pathname === '/compare' ? pathname : '/'}?game=dota2`)}>
                 DOTA 2
               </button>
             </div>
