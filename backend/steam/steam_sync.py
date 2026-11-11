@@ -104,7 +104,7 @@ def fetch_page(conn, client, appid, current):
     return len(rows)
 
 
-def batch(conn, client, history_enabled=False, limit=10):
+def batch(conn, client, history_enabled=False, limit=10, on_progress=None):
     current = now()
     if get_state(conn, 'cooldown') > stamp(current):
         return {'status': 'cooldown', 'until': get_state(conn, 'cooldown')}
@@ -120,6 +120,8 @@ def batch(conn, client, history_enabled=False, limit=10):
                 with conn:
                     set_state(conn, str(appid) + ':after', stamp(now() + timedelta(hours=1)))
                 result['page_errors'].append(appid)
+        if on_progress and result['search_items']:
+            on_progress(dict(result))
         if history_enabled:
             cutoff = stamp(current - timedelta(days=1))
             # Alternate the first game each run; neither game's histories should
@@ -165,6 +167,8 @@ def batch(conn, client, history_enabled=False, limit=10):
                                  (stamp(now()), json.dumps(data, ensure_ascii=False, allow_nan=False), appid, name))
                     conn.execute('DELETE FROM sync_history_attempts WHERE appid=? AND market_hash_name=?', (appid, name))
                 result['histories'] += 1
+                if on_progress and result['histories'] % 10 == 0 and result['histories'] < len(selected[:limit]):
+                    on_progress(dict(result))
         if result['page_errors']:
             result['status'] = 'partial'
     except DownloadError as exc:
@@ -242,9 +246,16 @@ def main():
             cookie = args.cookie_file.read_text().strip()
             if '\n' in cookie or '\r' in cookie:
                 raise ValueError('Invalid session cookie file')
+        def publish_progress(result):
+            progress = dict(result, status='collecting')
+            progress.update(publish(args.db, args.market_db, args.web_data))
+            progress['checked_at'] = stamp(now())
+            write_snapshot(progress, args.web_data / 'steam-status.json')
+            print(json.dumps(progress), flush=True)
+
         with closing(sqlite3.connect(args.db)) as conn:
             initialize_sync(conn)
-            result = {'status': 'publish_only'} if args.publish_only else batch(conn, SteamClient(cookie, args.delay), bool(cookie), args.history_limit)
+            result = {'status': 'publish_only'} if args.publish_only else batch(conn, SteamClient(cookie, args.delay), bool(cookie), args.history_limit, on_progress=publish_progress)
         result.update(publish(args.db, args.market_db, args.web_data))
         result['checked_at'] = stamp(now())
         write_snapshot(result, args.web_data / 'steam-status.json')

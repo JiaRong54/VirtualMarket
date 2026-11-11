@@ -11,18 +11,29 @@ export function Dashboard({ game = 'cs2' }: { game?: Game }) {
   useEffect(() => {
     const controller = new AbortController()
     let pending = false
+    let previousPayload = ''
+    setSnapshot(null)
     const refresh = async () => {
-      if (pending) return
+      if (pending || document.hidden) return
       pending = true
       const next = await loadLatestSnapshot(controller.signal, game)
-      if (!controller.signal.aborted && next) setSnapshot(next)
+      if (!controller.signal.aborted && next) {
+        const payload = JSON.stringify(next)
+        if (payload !== previousPayload) {
+          previousPayload = payload
+          setSnapshot(next)
+        }
+      }
       pending = false
     }
     void refresh()
-    const timer = window.setInterval(() => void refresh(), 60_000)
+    const onVisible = () => { if (!document.hidden) void refresh() }
+    document.addEventListener('visibilitychange', onVisible)
+    const timer = window.setInterval(() => void refresh(), 15_000)
     return () => {
       controller.abort()
       window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
     }
   }, [game])
 

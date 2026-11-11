@@ -16,6 +16,21 @@ def page(appid, names, total=None, start=0):
 
 
 class SyncTests(unittest.TestCase):
+    def test_quotes_are_published_before_history_requests(self):
+        history = dict(success=True, price_prefix='$', price_suffix='', prices=[['Nov 02 2026 01: +0', 0.29, '5']])
+        client = Mock()
+        published = []
+        def response(route, params):
+            if route == 'pricehistory':
+                self.assertEqual(published[0]['search_items'], 1)
+                self.assertEqual(published[0]['histories'], 0)
+                return history
+            return page(730, ['A'])
+        client.get.side_effect = response
+        result = batch(self.conn, client, history_enabled=True, limit=1, on_progress=published.append)
+        self.assertEqual(result['histories'], 1)
+        self.assertEqual(published[0]['histories'], 0)
+
     def setUp(self):
         self.conn = sqlite3.connect(':memory:')
         self.addCleanup(self.conn.close)
