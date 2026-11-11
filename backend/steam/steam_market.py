@@ -1,8 +1,8 @@
 """Fetch Steam Market prices into the existing SQLite schema and export stored data.
 
 Examples (from the project root):
-  python backend/steam_market.py fetch --name "AK-47 | Redline (Field-Tested)"
-  python backend/steam_market.py export --output exports/steam_market.csv
+  python -m backend.steam.steam_market fetch --name "AK-47 | Redline (Field-Tested)"
+  python -m backend.steam.steam_market export --output exports/steam_market.csv
 
 Uses Python's standard library. The community priceoverview endpoint does not
 require a Web API key, but it is undocumented and may reject requests with 429.
@@ -22,10 +22,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, quote
 from urllib.request import Request, urlopen
 
-try:
-    from .db.db import DB_PATH, connect_db, initialize_db, save_observations
-except ImportError:
-    from db.db import DB_PATH, connect_db, initialize_db, save_observations
+from backend.db.db import DB_PATH, connect_db, initialize_db, save_observations
 
 SOURCE = 'steam_community_overview'
 FIELDS = ('appid', 'market_hash_name', 'observed_at', 'lowest_price_minor',

@@ -8,7 +8,7 @@ if [ "$RUN_USER" = root ]; then
     exit 1
 fi
 test -f "$PROJECT_DIR/loader/load_steam.py"
-test -f "$PROJECT_DIR/backend/steam_sync.py"
+test -f "$PROJECT_DIR/backend/steam/steam_sync.py"
 python3 -c 'import sys; assert sys.version_info >= (3, 9), "Python 3.9+ is required"'
 mkdir -p "$PROJECT_DIR/backend/db"
 sudo install -d -m 700 -o "$RUN_USER" -g "$(id -gn)" /var/lib/virtualmarket-sync
@@ -27,7 +27,7 @@ User=$RUN_USER
 WorkingDirectory=$PROJECT_DIR
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/usr/bin/python3 "$PROJECT_DIR/backend/steam_sync.py" --db "$PROJECT_DIR/backend/db/steam_cloud.db" --market-db "$PROJECT_DIR/backend/db/market.db" --web-data /usr/share/nginx/html/data --cookie-file /var/lib/virtualmarket-sync/steam-session
+ExecStart=/usr/bin/python3 -m backend.steam.steam_sync --db "$PROJECT_DIR/backend/db/steam_cloud.db" --market-db "$PROJECT_DIR/backend/db/market.db" --web-data /usr/share/nginx/html/data/csgo2 --cookie-file /var/lib/virtualmarket-sync/steam-session
 TimeoutStartSec=30min
 UMask=0077
 NoNewPrivileges=true

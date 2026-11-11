@@ -86,7 +86,7 @@ def test_command_line_writes_site_files_and_csv(tmp_path):
 
 
 def make_downloader_db(path, items):
-    """A database shaped like Jerome's backend/steam_history.py makes."""
+    """A database shaped like Jerome's backend/steam/steam_history.py makes."""
     conn = sqlite3.connect(path)
     conn.executescript('''
         CREATE TABLE discovery (scope INTEGER PRIMARY KEY, next_start INTEGER NOT NULL DEFAULT 0,

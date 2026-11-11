@@ -1,6 +1,11 @@
 # Frontend: Game Skin Market Analytics
 
-The web app for our CSCI 49900 capstone. This is the layout foundation: one page with navigation for every planned section and a placeholder where the main market table goes. No live data is connected yet.
+The web app for our CSCI 49900 capstone. The dashboard reads exported Steam Market
+listing observations; item charts read separately exported Steam sale history.
+Data appears after the collectors and exporters run, not just after cloning Git.
+
+See [Steam data setup](../loader/STEAM.md) for the current AWS workflow. The old
+Skinport loader is retained as a separate tool and is not the dashboard's source.
 
 ## Stack
 
@@ -55,11 +60,10 @@ src/
 
 ## Where data plugs in
 
-The dashboard loads the latest snapshot through `src/lib/api.ts`. By default it reads `public/data/latest.json`, the file the loader writes:
+The dashboard loads the latest snapshot through `src/lib/api.ts`. By default it reads `public/data/csgo2/steam-latest.json`:
 
 ```bash
-cd loader
-python load_snapshot.py --latest --json ../frontend/public/data/latest.json
+python3 loader/load_steam.py --db backend/db/market.db
 ```
 
 Reload the page and the table shows the 100 most expensive items, with the item count and snapshot age in the tiles. No file means the placeholder.
@@ -70,13 +74,15 @@ When Jerome's API is up, point the site at it with a `.env` file in `frontend/` 
 VITE_PRICES_URL=https://<api-address>/prices/latest
 ```
 
-The API needs to return the same shape as `latest.json`: an object with a `rows` list.
+The API must return the same shape as `steam-latest.json`: `source: "steam"`,
+`currency: "USD"`, `item_count`, `collected_at`, and a `rows` list containing
+only `steam_community_overview` or `steam_community_search` observations.
 
 ### Item pages and Steam history
 
-Each item has a page at `#/item/<name>`. Click an item in the market table, or on the Price Movements page. It shows the current Skinport price next to a chart of Steam sale history. The history comes from `public/data/history/`, written by `loader/convert_history.py --site ../frontend/public/data`.
+Each item has a page at `#/item/<name>`. Click an item in the market table, or on the Price Movements page. It shows the latest observed Steam listing price next to a chart of Steam sale history. The history comes from `public/data/csgo2/history/`, written by `loader/convert_history.py --in backend/db/steam_history.db --site frontend/public/data/csgo2` from the repository root.
 
-Game updates show as lines on the chart once `public/data/events.json` (CS2) or `public/data/dota2/events.json` (Dota 2) exists. Don't edit these by hand. Add rows to `timeline/update_events.csv` and run:
+Game updates show as lines on the chart once `public/data/csgo2/events.json` (CS2) or `public/data/dota2/events.json` (Dota 2) exists. Don't edit these by hand. Add rows to `timeline/update_events.csv` and run:
 
 ```bash
 python loader/build_events.py --csv timeline/update_events.csv --site frontend/public/data
@@ -98,8 +104,8 @@ interface PriceObservation {
   game: 'cs2' | 'dota2'
   timestamp: string          // ISO 8601, UTC
   lowest_price_minor: number // whole cents: 1240 = $12.40
-  listing_count: number
-  source: string             // e.g. "skinport"
+  listing_count: number | null
+  source: string             // e.g. "steam_community_search"
 }
 ```
 

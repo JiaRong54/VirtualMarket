@@ -13,9 +13,9 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 
-from steam_history import DownloadError, SteamClient, initialize, validate_history
+from backend.steam.steam_history import DownloadError, SteamClient, initialize, validate_history
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'loader'))
 from load_steam import make_snapshot, read_cloud, read_market, write_snapshot
 from convert_history import parse_record, to_daily, movement_stats

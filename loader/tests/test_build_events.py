@@ -26,7 +26,7 @@ def test_splits_by_game_and_sorts_by_date(tmp_path):
     ))
     counts = be.write_site(be.read_events(csv_path), tmp_path / "site")
     assert counts == {"cs2": 2, "dota2": 1}
-    cs2 = json.loads((tmp_path / "site" / "events.json").read_text())
+    cs2 = json.loads((tmp_path / "site" / "csgo2" / "events.json").read_text())
     assert [e["date"] for e in cs2] == ["2026-10-01", "2026-10-20"]
     assert cs2[0] == {"date": "2026-10-01", "label": "First update", "type": "case", "link": "https://example.com/a"}
     dota = json.loads((tmp_path / "site" / "dota2" / "events.json").read_text())
@@ -47,4 +47,4 @@ def test_bad_rows_name_the_line(tmp_path, row, message):
 
 def test_empty_csv_writes_empty_files(tmp_path):
     assert be.main(["--csv", str(write(tmp_path, "")), "--site", str(tmp_path / "site")]) == 0
-    assert json.loads((tmp_path / "site" / "events.json").read_text()) == []
+    assert json.loads((tmp_path / "site" / "csgo2" / "events.json").read_text()) == []

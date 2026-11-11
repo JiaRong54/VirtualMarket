@@ -16,7 +16,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-DEFAULT_DB = Path(__file__).resolve().parent / 'db' / 'steam_history.db'
+DEFAULT_DB = Path(__file__).resolve().parents[1] / 'db' / 'steam_history.db'
 
 
 class DownloadError(RuntimeError):

@@ -6,7 +6,7 @@ from pathlib import Path
 from urllib.error import HTTPError
 from unittest.mock import Mock
 
-from steam_history import DownloadError, SteamClient, download, export_jsonl, initialize
+from backend.steam.steam_history import DownloadError, SteamClient, download, export_jsonl, initialize
 
 
 def page(start, names, total):

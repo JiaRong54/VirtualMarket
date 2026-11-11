@@ -111,7 +111,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--db', type=Path, help='Existing market.db; default if --cloud-db is absent')
     parser.add_argument('--cloud-db', type=Path, help='Cloud collector DB containing cloud_market_items')
-    parser.add_argument('--json', type=Path, default=ROOT / 'frontend/public/data/steam-latest.json')
+    parser.add_argument('--json', type=Path, default=ROOT / 'frontend/public/data/csgo2/steam-latest.json')
     parser.add_argument('--name', action='append', default=[], help='Fetch this exact item name before exporting; repeatable')
     parser.add_argument('--appid', type=int, choices=GAMES, default=730)
     parser.add_argument('--delay', type=float, default=15)
@@ -124,7 +124,7 @@ def main():
             parser.error('JSON output must not overwrite an input database')
     if args.name:
         sys.path.insert(0, str(ROOT))
-        from backend.steam_market import fetch_and_save
+        from backend.steam.steam_market import fetch_and_save
         for index, name in enumerate(args.name):
             if index:
                 time.sleep(args.delay)

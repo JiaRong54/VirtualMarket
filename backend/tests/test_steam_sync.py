@@ -5,8 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from steam_sync import batch, fetch_page, get_state, initialize_sync, now, publish
-from steam_history import DownloadError
+from backend.steam.steam_sync import batch, fetch_page, get_state, initialize_sync, now, publish
+from backend.steam.steam_history import DownloadError
 
 
 def page(appid, names, total=None, start=0):
@@ -95,7 +95,7 @@ class SyncTests(unittest.TestCase):
             conn.close()
 
     def test_dota_mode_publishes_only_dota(self):
-        import steam_sync
+        from backend.steam import steam_sync
         with tempfile.TemporaryDirectory() as folder, patch.dict(steam_sync.GAMES, {570: 'dota2'}, clear=True):
             db = Path(folder) / 'dota.db'
             conn = sqlite3.connect(db)

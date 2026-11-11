@@ -1,5 +1,5 @@
 import type { Game } from '../types/market'
-// Steam price history, written by loader/steam_history.py into public/data/history/.
+// Steam price history, written by loader/steam_history.py into public/data/csgo2/history/.
 
 /** [date "2014-08-14", median sale price in cents, number sold that day] */
 export type DailyPoint = [string, number, number]
@@ -45,17 +45,17 @@ async function getJson<T>(url: string, signal?: AbortSignal): Promise<T | null> 
 }
 
 export async function loadHistoryIndex(signal?: AbortSignal, game: Game = 'cs2'): Promise<HistoryIndexEntry[]> {
-  const data = await getJson<{ items?: HistoryIndexEntry[] }>(`${BASE}${game === 'dota2' ? '/dota2' : ''}/history/index.json`, signal)
+  const data = await getJson<{ items?: HistoryIndexEntry[] }>(`${BASE}${game === 'dota2' ? '/dota2' : '/csgo2'}/history/index.json`, signal)
   return Array.isArray(data?.items) ? data.items.filter((item) => item.game === game) : []
 }
 
 export async function loadItemHistory(file: string, signal?: AbortSignal, game: Game = 'cs2'): Promise<ItemHistory | null> {
-  const data = await getJson<ItemHistory>(`${BASE}${game === 'dota2' ? '/dota2' : ''}/history/${encodeURIComponent(file)}`, signal)
+  const data = await getJson<ItemHistory>(`${BASE}${game === 'dota2' ? '/dota2' : '/csgo2'}/history/${encodeURIComponent(file)}`, signal)
   return data && data.game === game && Array.isArray(data.points) ? data : null
 }
 
 export async function loadEvents(signal?: AbortSignal, game: Game = 'cs2'): Promise<UpdateEvent[]> {
-  const data = await getJson<UpdateEvent[]>(`${BASE}${game === 'dota2' ? '/dota2' : ''}/events.json`, signal)
+  const data = await getJson<UpdateEvent[]>(`${BASE}${game === 'dota2' ? '/dota2' : '/csgo2'}/events.json`, signal)
   return Array.isArray(data) ? data.filter((e) => e && e.date && e.label) : []
 }
 

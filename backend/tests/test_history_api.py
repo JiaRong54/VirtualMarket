@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from fastapi.testclient import TestClient
-from backend.history_api import create_app
+from backend.api.history_api import create_app
 
 
 class HistoryApiTests(unittest.TestCase):

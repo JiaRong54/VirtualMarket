@@ -5,7 +5,7 @@ into data for the website and rows for the database.
 It reads any of these:
   - Jerome's downloader database, backend/db/steam_history.db
     (table history_items, one saved Steam response per item)
-  - his offline export, from  python backend/steam_history.py --export FILE.jsonl
+  - his offline export, from  python -m backend.steam.steam_history --export FILE.jsonl
     (one line per item: appid, market_hash_name, response)
   - a single saved Steam response, one .json file per item
 
@@ -27,7 +27,7 @@ Outputs:
   --csv FILE   every raw point, for the database
 
 Usage:
-  python convert_history.py --in ../backend/db/steam_history.db --site ../frontend/public/data --csv steam_rows.csv
+  python convert_history.py --in ../backend/db/steam_history.db --site ../frontend/public/data/csgo2 --csv steam_rows.csv
 """
 
 import argparse

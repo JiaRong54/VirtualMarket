@@ -4,7 +4,7 @@ Update timeline -> chart markers.
 Reads timeline/update_events.csv (one row per game update, filled in by hand from
 the official patch notes) and writes the events.json files the item charts read:
 
-    <site>/events.json         CS2 updates
+    <site>/csgo2/events.json         CS2 updates
     <site>/dota2/events.json   Dota 2 updates
 
 CSV columns:
@@ -64,7 +64,7 @@ def write_site(events, site_dir):
     """Writes one events.json per game. Returns {game: count}."""
     counts = {}
     for game in GAMES:
-        out = Path(site_dir) / ("events.json" if game == "cs2" else "dota2/events.json")
+        out = Path(site_dir) / ("csgo2/events.json" if game == "cs2" else "dota2/events.json")
         out.parent.mkdir(parents=True, exist_ok=True)
         rows = [{k: e[k] for k in ("date", "label", "type", "link")} for e in events if e["game"] == game]
         out.write_text(json.dumps(rows, indent=1) + "\n", encoding="utf-8")

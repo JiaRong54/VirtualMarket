@@ -6,12 +6,12 @@ from contextlib import closing
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
-from backend.steam_history import DownloadError, validate_history
+from backend.steam.steam_history import DownloadError, validate_history
 
 
 def create_app(db_path=None):
     app = FastAPI(title="VirtualMarket price history")
-    database = Path(db_path or os.environ.get("STEAM_HISTORY_DB", Path(__file__).parent / "db" / "steam_cloud.db"))
+    database = Path(db_path or os.environ.get("STEAM_HISTORY_DB", Path(__file__).resolve().parents[1] / "db" / "steam_cloud.db"))
 
     @app.get("/api/price-history")
     def price_history(market_hash_name: str = Query(min_length=1, max_length=512)):

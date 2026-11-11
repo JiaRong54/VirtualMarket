@@ -14,7 +14,7 @@ export interface Snapshot {
 // Where prices come from.
 // Steam-only filename prevents an old Skinport snapshot from being reused.
 // Later: Jerome's API, by setting VITE_PRICES_URL in a .env file.
-const PRICES_URL = import.meta.env.VITE_PRICES_URL ?? './data/steam-latest.json'
+const PRICES_URL = import.meta.env.VITE_PRICES_URL ?? './data/csgo2/steam-latest.json'
 
 /** Latest snapshot, or null when there is no data yet. Never throws. */
 export async function loadLatestSnapshot(signal?: AbortSignal, game: Game = 'cs2'): Promise<Snapshot | null> {

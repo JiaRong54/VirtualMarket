@@ -1,5 +1,9 @@
 # Snapshot loader
 
+The website now uses **Steam Market** listing data. Start with
+[Steam data setup](STEAM.md) and `load_steam.py`. The Skinport instructions below
+describe the retained legacy loader, which does not feed the default dashboard.
+
 Turns one raw Skinport snapshot from S3 into price rows for the database and the website.
 
 ```
@@ -47,18 +51,18 @@ Writing `latest.json` into `frontend/public/data/` makes the dashboard table sho
 
 ## Steam price history (from Jerome's downloader)
 
-Jerome's `backend/steam_history.py` downloads Steam price history into `backend/db/steam_history.db`. `convert_history.py` turns that into chart data for the site and rows for the database. Each point is a date, the median sale price, and the number sold. These are sales, not listings, so they get their own table instead of `price_observations`.
+Jerome's `backend/steam/steam_history.py` downloads Steam price history into `backend/db/steam_history.db`. `convert_history.py` turns that into chart data for the site and rows for the database. Each point is a date, the median sale price, and the number sold. These are sales, not listings, so they get their own table instead of `price_observations`.
 
 From the repo root:
 
 ```bash
-python3 loader/convert_history.py --in backend/db/steam_history.db --site frontend/public/data --csv loader/steam_rows.csv
+python3 loader/convert_history.py --in backend/db/steam_history.db --site frontend/public/data/csgo2 --csv loader/steam_rows.csv
 ```
 
 It reads any of these:
 
 - the downloader database (`history_items`; items not downloaded yet are skipped)
-- the downloader's export: `python3 backend/steam_history.py --export exports/steam_history.jsonl`
+- the downloader's export: `python3 -m backend.steam.steam_history --export exports/steam_history.jsonl`
 - single saved Steam responses, one `.json` file per item
 
 Outputs:
