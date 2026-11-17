@@ -12,7 +12,6 @@ No Steam ID, profile editing, email verification, or password reset is included.
 - `schema.sql`: users, watchlist_items, sessions, login_attempts, and session expiration index.
 - `accounts.py`: account routes, password hashing, cookies, and login throttling.
 - `watchlist.py`: authenticated list, add, and remove routes.
-- `FUNCTIONS.md`: file map, function explanations, and the login/save flow.
 - `app.py`: standalone FastAPI service and local test page.
 - `frontend/index.html`: register, confirm password, login, and logout UI.
 - Local-only `tests/test_accounts.py`: lifecycle, isolation, validation, persistence, expiration,
