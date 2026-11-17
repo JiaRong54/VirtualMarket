@@ -890,6 +890,14 @@ p {
 }
 
 /* ---------- Compare ---------- */
+.account-panel { padding: 20px; display: grid; gap: 16px; }
+.account-panel h2 { overflow-wrap: anywhere; }
+.account-panel > button { justify-self: start; }
+.account-form { display: grid; gap: 14px; max-width: 420px; width: 100%; }
+.account-form label { display: grid; gap: 6px; }
+.account-form input { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--grey-light); border-radius: 5px; font: inherit; }
+.account-status { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 0; }
+
 
 .chip-row {
   display: flex;

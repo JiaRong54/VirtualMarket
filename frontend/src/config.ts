@@ -37,7 +37,7 @@ export const SECTIONS: Section[] = [
     path: '/profile',
     label: 'Profile',
     icon: 'profile',
-    blurb: 'Account and Steam settings',
+    blurb: 'Your account and saved watchlist',
   },
 ]
 

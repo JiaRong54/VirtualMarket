@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VirtualMarket Account</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; background: #101827; color: #e5edf7; font: 16px system-ui, sans-serif; }
+  main { max-width: 440px; margin: 6vh auto; padding: 32px; background: #192638; border: 1px solid #34465e; border-radius: 16px; }
+  h1 { margin-top: 0; } p { line-height: 1.6; } label { display: block; margin-top: 18px; }
+  input, button { width: 100%; padding: 12px; border-radius: 8px; font: inherit; }
+  input { margin-top: 6px; border: 1px solid #65778e; background: #101827; color: white; }
+  button { margin-top: 20px; border: 0; background: #7dd3fc; color: #102033; cursor: pointer; }
+  button.secondary { background: transparent; color: #7dd3fc; border: 1px solid #65778e; }
+  button:disabled { opacity: .5; cursor: wait; } [hidden] { display: none !important; }
+  #message { min-height: 24px; overflow-wrap: anywhere; } #email-display { overflow-wrap: anywhere; }
+</style>
+<main>
+  <h1>VirtualMarket</h1>
+  <section id="signed-out">
+    <h2 id="heading">Sign in</h2>
+    <form id="account-form">
+      <label>Email<input id="email" type="email" maxlength="254" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" minlength="12" maxlength="128" autocomplete="current-password" required></label>
+      <label id="confirm-label" hidden>Confirm password<input id="confirm" type="password" maxlength="128" autocomplete="new-password"></label>
+      <p>Use 12–128 characters for your password.</p>
+      <button id="submit" type="submit">Sign in</button>
+    </form>
+    <button id="toggle" class="secondary" type="button">Create an account</button>
+  </section>
+  <section id="signed-in" hidden>
+    <h2>Your account</h2>
+    <p id="email-display"></p>
+    <button id="logout" type="button">Sign out</button>
+  </section>
+  <p id="message" role="status" aria-live="polite"></p>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let registering = false;
+  async function request(path, method = 'GET', body) {
+    const response = await fetch('/api' + path, {
+      method, credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-VirtualMarket': '1' },
+      ...(body ? { body: JSON.stringify(body) } : {})
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Please check your email and password.');
+    return data;
+  }
+  function showUser(user) {
+    $('signed-in').hidden = !user;
+    $('signed-out').hidden = !!user;
+    $('email-display').textContent = user ? user.email : '';
+  }
+  function setMode(value) {
+    registering = value;
+    $('heading').textContent = value ? 'Create an account' : 'Sign in';
+    $('submit').textContent = value ? 'Register' : 'Sign in';
+    $('toggle').textContent = value ? 'Already registered? Sign in' : 'Create an account';
+    $('confirm-label').hidden = !value;
+    $('confirm').required = value;
+    $('password').autocomplete = value ? 'new-password' : 'current-password';
+    $('password').value = $('confirm').value = '';
+    $('message').textContent = '';
+  }
+  $('toggle').onclick = () => setMode(!registering);
+  $('account-form').onsubmit = async (event) => {
+    event.preventDefault();
+    if (registering && $('password').value !== $('confirm').value) {
+      $('message').textContent = 'Passwords do not match.'; return;
+    }
+    $('submit').disabled = $('toggle').disabled = true;
+    try {
+      await request(registering ? '/auth/register' : '/auth/login', 'POST', { email: $('email').value, password: $('password').value });
+      if (registering) { setMode(false); $('message').textContent = 'Account created. Sign in to continue.'; }
+      else { showUser(await request('/me')); $('message').textContent = 'Signed in.'; }
+      $('password').value = $('confirm').value = '';
+    } catch (error) { $('message').textContent = error.message; }
+    finally { $('submit').disabled = $('toggle').disabled = false; }
+  };
+  $('logout').onclick = async () => {
+    $('logout').disabled = true;
+    try { await request('/auth/logout', 'POST'); showUser(null); $('message').textContent = 'Signed out.'; }
+    catch (error) { $('message').textContent = error.message; }
+    finally { $('logout').disabled = false; }
+  };
+  request('/me').then(showUser).catch(() => showUser(null));
+</script>
+</html>

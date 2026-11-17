@@ -28,6 +28,13 @@ npm run dev       # opens at http://localhost:5173
 
 Other commands:
 
+For accounts and saved watchlists, also start the [UserProfile service](../backend/UserProfile/README.md)
+on port 8001 with `COOKIE_SECURE=false` for local HTTP. The development server
+proxies account requests to it. Open `/#/profile` to register or sign in.
+Profile, Watchlist, and item pages share the account's saved list. A production
+host needs an HTTPS reverse proxy for these routes; static files alone cannot
+provide account storage. Old browser-local lists are retained but not imported.
+
 ```bash
 npm run build     # type-checks, then writes the site to dist/
 npm run preview   # serves dist/ to check the production build

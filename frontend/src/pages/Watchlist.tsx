@@ -41,7 +41,7 @@ async function loadQuotes(signal: AbortSignal): Promise<Map<string, Quote>> {
 }
 
 export function Watchlist() {
-  const { items, add, remove, has } = useWatchlist()
+  const { items, add, remove, has, user, busy } = useWatchlist()
   const [quotes, setQuotes] = useState<Map<string, Quote> | null>(null)
   const [query, setQuery] = useState('')
   const [game, setGame] = useState<Game>('cs2')
@@ -73,7 +73,7 @@ export function Watchlist() {
   const worst = moved.reduce<(typeof rows)[number] | null>((w, r) => (w === null || r.pct! < w.pct! ? r : w), null)
 
   const summary = [
-    { label: 'Items watched', value: formatCount(items.length), note: 'saved in this browser' },
+    { label: 'Items watched', value: formatCount(items.length), note: 'saved to your account' },
     {
       label: 'Biggest gain',
       value: best && best.pct! > 0 ? formatChange(best.saved.added_price_minor!, best.now!) : '--',
@@ -88,19 +88,23 @@ export function Watchlist() {
 
   const trimmed = query.trim()
   const known = names.includes(trimmed)
-  const canAdd = known && !has(trimmed, game)
+  const canAdd = !!user && !busy && known && !has(trimmed, game)
 
-  function onAdd(e: React.FormEvent) {
+  async function onAdd(e: React.FormEvent) {
     e.preventDefault()
     if (!canAdd) return
-    add(trimmed, game, quotes?.get(keyOf(game, trimmed))?.price ?? null)
-    setQuery('')
+    if (await add(trimmed, game, quotes?.get(keyOf(game, trimmed))?.price ?? null)) setQuery('')
   }
 
   let hint = 'Pick a name from the list'
   if (quotes === null) hint = 'Loading item names'
   else if (trimmed && !known) hint = 'No item with that exact name'
-  else if (known && !canAdd) hint = 'Already on your watchlist'
+  else if (known && has(trimmed, game)) hint = 'Already on your watchlist'
+
+  if (!user) return <section className="card empty-state">
+    <strong>{busy ? 'Loading your saved watchlist…' : 'Sign in to see your watchlist'}</strong>
+    {!busy && <Link to="/profile">Sign in or create an account</Link>}
+  </section>
 
   return (
     <>
@@ -178,7 +182,7 @@ export function Watchlist() {
                   <td className="num">{formatCount(quote?.listings ?? null)}</td>
                   <td className="muted">{formatAge(saved.added_at)}</td>
                   <td>
-                    <button type="button" className="link-btn" onClick={() => remove(saved.item_name, saved.game)}>
+                    <button type="button" className="link-btn" disabled={busy} onClick={() => void remove(saved.item_name, saved.game)}>
                       Remove
                     </button>
                   </td>

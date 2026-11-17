@@ -22,11 +22,11 @@ The website and the collection pipeline exist to answer that question with data.
 | Item pages with daily Steam price history charts | Working |
 | Game update markers on item charts | Working (needs `timeline/update_events.csv` filled in) |
 | Price Movements: biggest gains and drops over 1, 7 and 30 days, filtered by sales | Working |
-| Watchlist with change since added (saved in the browser) | Working |
+| Account watchlist with change since added | Implemented locally; requires UserProfile service |
 | Automatic anomaly detection (unusual moves flagged) | In progress |
 | Update vs. price movement correlation study | In progress |
 | Compare versions of the same skin (wear, StatTrak, quality) | Working |
-| User accounts | Planned |
+| Email registration and login | Implemented locally; AWS integration pending |
 
 The site is read-only on purpose. It never buys, sells or trades items.
 
@@ -163,7 +163,7 @@ The script installs a systemd service and timer, stores data under `backend/db/`
 - **Dashboard:** the market table. Switch between CS2 and Dota 2 at the top right. Click an item to open its page.
 - **Item page:** daily median sale price chart with 1 month, 6 months, 1 year and All ranges, update markers, and an **Add to watchlist** button.
 - **Compare:** pick a skin to see every version (wear, StatTrak, Souvenir) in one table and one chart.
-- **Watchlist:** items you follow, their price now, and the change since you added them. Saved in your browser until accounts exist.
+- **Watchlist:** items you follow, their price now, and the change since you added them. Saved to the signed-in account through the [UserProfile service](backend/UserProfile/README.md); Profile shows the same list.
 - **Price Movements:** the biggest gains or drops over 1, 7 or 30 days. The sales filter hides items that barely trade, since one sale can move their price 50%.
 
 ## Evaluation plan

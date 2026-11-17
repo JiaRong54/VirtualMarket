@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { PIPELINE, SECTIONS } from '../config'
 import { Icon } from './Icon'
+import { AccountStatus } from './AccountStatus'
 
 // The frame every page sits inside: sidebar on the left, top bar,
 // and an <Outlet /> where the current page is drawn.
@@ -46,27 +47,28 @@ export function Layout() {
       </aside>
 
       <div className="main">
-        <div className="banner">Development build. Backend API not connected yet.</div>
-
         <header className="topbar">
           <div>
             <h1>{current.label}</h1>
             <p>{current.blurb}</p>
           </div>
           <div className="topbar-tools">
-            <div className="game-switch" role="group" aria-label="Game">
+            {pathname.replace(/\/+$/, '') !== '/profile' && <div className="game-switch" role="group" aria-label="Game">
               <button type="button" className={!dota ? 'on' : ''} aria-pressed={!dota} onClick={() => navigate(`${pathname === '/movements' || pathname === '/compare' ? pathname : '/'}?game=cs2`)}>
                 CS2
               </button>
               <button type="button" className={dota ? 'on' : ''} aria-pressed={dota} onClick={() => navigate(`${pathname === '/movements' || pathname === '/compare' ? pathname : '/'}?game=dota2`)}>
                 DOTA 2
               </button>
-            </div>
-            <input className="search" type="search" placeholder="Search items" disabled />
+            </div>}
+            {!['/watchlist', '/compare', '/profile'].includes(pathname.replace(/\/+$/, '')) && (
+              <input className="search" type="search" placeholder="Search items" disabled />
+            )}
           </div>
         </header>
 
         <main className="content">
+          <AccountStatus />
           <Outlet />
         </main>
       </div>

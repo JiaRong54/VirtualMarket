@@ -91,7 +91,7 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
           type="button"
           className={watching ? 'watch-btn on' : 'watch-btn'}
           aria-pressed={watching}
-          disabled={loaded === null}
+          disabled={loaded === null || watchlist.busy || !watchlist.user}
           onClick={() =>
             watching
               ? watchlist.remove(name, game)
@@ -100,6 +100,7 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
         >
           {watching ? 'On watchlist' : 'Add to watchlist'}
         </button>
+        {!watchlist.user && !watchlist.busy && <Link to="/profile">Sign in to save items</Link>}
       </div>
 
       <div className="tiles">
