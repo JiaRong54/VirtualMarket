@@ -53,6 +53,7 @@ The site is read-only on purpose. It never buys, sells or trades items.
 3. **Publishing.** After each batch, the sync writes static JSON files for the website: the latest prices, one file per item's daily history, and an index with each item's recent price changes.
 4. **Website.** A React app reads those JSON files. It needs no server code, so any static host works.
 5. **Update timeline.** `timeline/update_events.csv` lists game updates from the official patch notes. `loader/build_events.py` turns it into the markers on the charts, and the same file is the input for the correlation study.
+6. **Anomaly detection.** `loader/flag_anomalies.py` flags days where an item's price moved far more than its normal daily move (z-score of 3 or more against the previous 30 days), matches each flag to a game update from the last 3 days, and writes `anomalies.json`. The Price Movements page shows the flags, and the item charts circle the flagged days.
 
 ### Data source history
 
@@ -72,6 +73,7 @@ loader/             converters from raw data to the website's JSON
   load_steam.py       Steam listings -> steam-latest.json
   load_snapshot.py    old Skinport S3 snapshots -> rows (kept for the record)
   build_events.py     update timeline CSV -> chart markers
+  flag_anomalies.py   unusual price moves, matched to game updates
   tests/              pytest tests with small made-up samples
 frontend/           React + TypeScript website (see frontend/README.md)
 timeline/           update_events.csv, the game update timeline
@@ -133,6 +135,12 @@ Add the game update markers:
 
 ```bash
 python loader/build_events.py --csv timeline/update_events.csv --site frontend/public/data
+```
+
+Flag unusual price moves (run after the two commands above):
+
+```bash
+python loader/flag_anomalies.py --site frontend/public/data
 ```
 
 ### 4. API (optional)
