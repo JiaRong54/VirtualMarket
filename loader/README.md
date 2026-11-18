@@ -96,3 +96,27 @@ python loader/build_events.py --csv timeline/update_events.csv --site frontend/p
 ```
 
 This writes `events.json` (CS2) and `dota2/events.json` (Dota 2). The item charts draw a line on each date. The same CSV is the input for the update correlation study. The script stops and names the line if a row has a bad date, game, type or link.
+
+## Anomaly detection (`flag_anomalies.py`)
+
+For each item, every day's price change is compared with that item's last 30 days of changes:
+
+```
+z = (today's change - average change, last 30 days) / spread of those changes
+```
+
+A day with |z| of 3 or more is flagged. Changes are measured in log terms, so a 10% move counts the same on a $1 case and a $1,000 knife. Days with fewer than 5 sales are skipped, because one odd sale can swing the median. An item needs 20 scored days before its first flag.
+
+Each flag is matched to the nearest update in `events.json` that went live on the same day or up to 3 days before it. The summary compares two shares:
+
+- flags that land near an update
+- all scored days that land near an update
+
+If updates make no difference, the two shares are about equal (ratio about 1.0). A ratio well above 1 means unusual moves bunch up after updates. That is the first test of our research question.
+
+```bash
+python loader/flag_anomalies.py --site frontend/public/data           # writes csgo2/anomalies.json and dota2/anomalies.json
+python loader/flag_anomalies.py --site frontend/public/data --top 20  # print more flags
+```
+
+Settings: `--window` (30), `--threshold` (3), `--min-sold` (5).
