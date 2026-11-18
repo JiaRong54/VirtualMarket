@@ -1,6 +1,8 @@
 export interface User {
   id: number
   email: string
+  username: string
+  icon: string | null
   created_at: number
 }
 

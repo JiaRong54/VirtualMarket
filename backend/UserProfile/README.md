@@ -7,6 +7,22 @@ and item pages now use this service through the Vite development proxy. This
 change has not been deployed to AWS.
 No Steam ID, profile editing, email verification, or password reset is included.
 
+Registration now accepts a display `username` (3-32 letters, numbers, dots,
+underscores, or hyphens). Sign-in still uses email and password. Usernames are
+display names, not unique login identifiers. Older clients that omit the name
+receive `User<id>`. Profile displays `Hi, <username>` and a default avatar.
+
+The nullable `users.icon` column reserves a future managed avatar storage key.
+It defaults to NULL. There is no upload endpoint or avatar editing yet, and the
+frontend currently renders only the default avatar. Clients cannot set `icon`
+through registration. `/api/me` and the watchlist user object include both fields.
+
+Startup upgrades the previous users table by adding these columns in place;
+existing accounts receive `User<id>` and retain passwords, sessions and watchlists.
+Back up the database before deploying this schema change. Repeated startup keeps
+existing usernames and icon values. The previous application version rejects the
+expanded schema, so a rollback needs matching application/schema handling.
+
 ## Files
 
 - `schema.sql`: users, watchlist_items, sessions, login_attempts, and session expiration index.

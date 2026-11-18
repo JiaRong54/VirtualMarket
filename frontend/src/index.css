@@ -892,6 +892,10 @@ p {
 /* ---------- Compare ---------- */
 .account-panel { padding: 20px; display: grid; gap: 16px; }
 .account-panel h2 { overflow-wrap: anywhere; }
+.account-identity { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; }
+.account-identity > div:last-child { min-width: 0; overflow-wrap: anywhere; }
+.account-avatar { display: grid; place-items: center; width: 80px; height: 80px; flex-shrink: 0; border-radius: 50%; background: var(--charcoal); color: var(--white); border: 3px solid var(--red); }
+.account-avatar .icon { width: 40px; height: 40px; }
 .account-panel > button { justify-self: start; }
 .account-form { display: grid; gap: 14px; max-width: 420px; width: 100%; }
 .account-form label { display: grid; gap: 6px; }

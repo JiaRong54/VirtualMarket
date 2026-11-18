@@ -20,6 +20,7 @@
   <section id="signed-out">
     <h2 id="heading">Sign in</h2>
     <form id="account-form">
+      <label id="username-label" hidden>Username<input id="username" type="text" minlength="3" maxlength="32" autocomplete="nickname" pattern="[A-Za-z0-9_.\-]{3,32}"></label>
       <label>Email<input id="email" type="email" maxlength="254" autocomplete="username" required></label>
       <label>Password<input id="password" type="password" minlength="12" maxlength="128" autocomplete="current-password" required></label>
       <label id="confirm-label" hidden>Confirm password<input id="confirm" type="password" maxlength="128" autocomplete="new-password"></label>
@@ -29,7 +30,7 @@
     <button id="toggle" class="secondary" type="button">Create an account</button>
   </section>
   <section id="signed-in" hidden>
-    <h2>Your account</h2>
+    <h2 id="greeting">Your account</h2>
     <p id="email-display"></p>
     <button id="logout" type="button">Sign out</button>
   </section>
@@ -52,9 +53,12 @@
     $('signed-in').hidden = !user;
     $('signed-out').hidden = !!user;
     $('email-display').textContent = user ? user.email : '';
+    $('greeting').textContent = user ? `Hi, ${user.username}` : 'Your account';
   }
   function setMode(value) {
     registering = value;
+    $('username-label').hidden = !value;
+    $('username').required = value;
     $('heading').textContent = value ? 'Create an account' : 'Sign in';
     $('submit').textContent = value ? 'Register' : 'Sign in';
     $('toggle').textContent = value ? 'Already registered? Sign in' : 'Create an account';
@@ -72,7 +76,7 @@
     }
     $('submit').disabled = $('toggle').disabled = true;
     try {
-      await request(registering ? '/auth/register' : '/auth/login', 'POST', { email: $('email').value, password: $('password').value });
+      await request(registering ? '/auth/register' : '/auth/login', 'POST', { email: $('email').value, password: $('password').value, ...(registering ? { username: $('username').value.trim() } : {}) });
       if (registering) { setMode(false); $('message').textContent = 'Account created. Sign in to continue.'; }
       else { showUser(await request('/me')); $('message').textContent = 'Signed in.'; }
       $('password').value = $('confirm').value = '';

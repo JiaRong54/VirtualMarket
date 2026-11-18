@@ -3,6 +3,8 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
+    username TEXT NOT NULL DEFAULT 'User',
+    icon TEXT, -- Reserved for a future managed avatar storage key; NULL uses the default icon.
     password_hash TEXT NOT NULL,
     salt TEXT NOT NULL,
     created_at INTEGER NOT NULL

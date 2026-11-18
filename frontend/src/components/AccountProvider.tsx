@@ -65,10 +65,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }, true)
   }
 
-  function signIn(email: string, password: string, register = false) {
+  function signIn(email: string, password: string, register = false, username?: string) {
     return run(async () => {
       clearAccount()
-      if (register) await accountRequest('/auth/register', 'POST', { email, password })
+      if (register) await accountRequest('/auth/register', 'POST', { email, password, username })
       await accountRequest('/auth/login', 'POST', { email, password })
       channel.current?.postMessage('changed')
       await loadAccount()

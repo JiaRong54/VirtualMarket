@@ -8,7 +8,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 COOKIE = "vm_session"
 TTL = 604800
@@ -16,6 +16,21 @@ TTL = 604800
 class Credentials(BaseModel):
     email: str = Field(min_length=3, max_length=254)
     password: str = Field(min_length=12, max_length=128)
+
+
+class Registration(Credentials):
+    # Optional for older clients; the current registration UI requires a name.
+    username: str | None = None
+
+    @field_validator('username')
+    @classmethod
+    def validate_username(cls, value):
+        if value is None:
+            return value
+        value = value.strip()
+        if not re.fullmatch(r'[A-Za-z0-9_.-]{3,32}', value):
+            raise ValueError('Username must be 3-32 letters, numbers, dots, underscores or hyphens.')
+        return value
 
 @contextmanager
 def connection(path):
@@ -34,9 +49,18 @@ def install_accounts(app, db_path=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     with connection(path) as db:
         columns = {row['name'] for row in db.execute('PRAGMA table_info(users)')}
-        if columns and columns != {'id', 'email', 'password_hash', 'salt', 'created_at'}:
+        base_columns = {'id', 'email', 'password_hash', 'salt', 'created_at'}
+        if columns and (not base_columns <= columns or not columns <= base_columns | {'username', 'icon'}):
             raise RuntimeError('Unsupported users schema. Back up and migrate the database, or choose a new USERS_DB path.')
         db.executescript(Path(__file__).with_name('schema.sql').read_text(encoding='utf-8'))
+        # Upgrade existing accounts in place without replacing passwords, sessions or saved items.
+        db.execute('BEGIN IMMEDIATE')
+        columns = {row['name'] for row in db.execute('PRAGMA table_info(users)')}
+        if 'username' not in columns:
+            db.execute("ALTER TABLE users ADD COLUMN username TEXT NOT NULL DEFAULT 'User'")
+            db.execute("UPDATE users SET username='User' || id")
+        if 'icon' not in columns:
+            db.execute('ALTER TABLE users ADD COLUMN icon TEXT')
     secure = os.environ.get("COOKIE_SECURE", "true").lower() == "true"
     router = APIRouter(prefix="/api")
 
@@ -66,19 +90,21 @@ def install_accounts(app, db_path=None):
     def current_user(request: Request):
         token = request.cookies.get(COOKIE, "")
         with connection(path) as db:
-            user = db.execute("SELECT u.id,u.email,u.created_at FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token_hash=? AND s.expires_at>?", (digest(token), int(time.time()))).fetchone()
+            user = db.execute("SELECT u.id,u.email,u.username,u.icon,u.created_at FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token_hash=? AND s.expires_at>?", (digest(token), int(time.time()))).fetchone()
         if user is None:
             raise HTTPException(401, "Login required")
         return dict(user)
 
     @router.post("/auth/register", status_code=201)
-    def register(data: Credentials):
+    def register(data: Registration):
         email = email_key(data.email)
         salt = secrets.token_hex(16)
         hashed = password_hash(data.password, salt)
         try:
             with connection(path) as db:
-                db.execute("INSERT INTO users(email,password_hash,salt,created_at) VALUES(?,?,?,?)", (email, hashed, salt, int(time.time())))
+                cursor = db.execute("INSERT INTO users(email,username,password_hash,salt,created_at) VALUES(?,?,?,?,?)", (email, data.username or 'User', hashed, salt, int(time.time())))
+                if data.username is None:
+                    db.execute('UPDATE users SET username=? WHERE id=?', (f'User{cursor.lastrowid}', cursor.lastrowid))
         except sqlite3.IntegrityError:
             raise HTTPException(409, "Email already registered") from None
         return {"registered": True}

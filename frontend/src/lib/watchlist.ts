@@ -15,7 +15,7 @@ interface AccountState {
   busy: boolean
   error: string
   refresh: () => Promise<boolean>
-  signIn: (email: string, password: string, register?: boolean) => Promise<boolean>
+  signIn: (email: string, password: string, register?: boolean, username?: string) => Promise<boolean>
   signOut: () => Promise<boolean>
   has: (name: string, game: Game) => boolean
   add: (name: string, game: Game, price: number | null) => Promise<boolean>
