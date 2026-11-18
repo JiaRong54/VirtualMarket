@@ -964,3 +964,24 @@ p {
   padding-left: 14px;
   font-size: 13px;
 }
+
+/* ---------- Unusual moves (anomaly detection) ---------- */
+
+.anomaly-tiles {
+  padding: 14px 18px 0;
+}
+
+.update-cell {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.chart-wrap .flag-dot {
+  fill: var(--white);
+  stroke: var(--red);
+  stroke-width: 3;
+}
+
+.chart-wrap .event-line.minor {
+  opacity: 0.35;
+}

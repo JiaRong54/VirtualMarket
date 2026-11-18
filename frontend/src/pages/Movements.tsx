@@ -1,7 +1,7 @@
 import type { Game } from '../types/market'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { PagePlaceholder } from '../components/PagePlaceholder'
+import { UnusualMoves } from '../components/UnusualMoves'
 import { formatChange, formatCount, formatDay, formatPrice } from '../lib/format'
 import { itemPath, loadHistoryIndex, type HistoryIndexEntry } from '../lib/history'
 
@@ -170,15 +170,7 @@ export function Movements({ game = 'cs2' }: { game?: Game }) {
         </p>
       </section>
 
-      <PagePlaceholder
-        summary="Next: unusual moves flagged automatically and lined up against game update dates. This is where our research question shows up in the app."
-        willShow={[
-          "A flag on moves far outside the item's normal range",
-          'Game update markers on the same timeline',
-          'Filter by game and by date range',
-        ]}
-        needs={['Anomaly detection output (Jerome)', 'Game update event timeline (Jerome)']}
-      />
+      <UnusualMoves game={game} />
     </>
   )
 }
