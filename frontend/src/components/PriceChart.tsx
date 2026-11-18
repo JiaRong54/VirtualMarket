@@ -19,11 +19,13 @@ interface PriceChartProps {
   points: DailyPoint[]
   range: Range
   events?: UpdateEvent[]
+  /** Days flagged as unusual by loader/flag_anomalies.py, drawn as red rings on the line. */
+  flags?: string[]
 }
 
 // Line chart of one item's Steam median sale price, one point per day.
 // Hover or use the arrow keys to read a day's price and number sold.
-export function PriceChart({ points, range, events = [] }: PriceChartProps) {
+export function PriceChart({ points, range, events = [], flags = [] }: PriceChartProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(900)
   // The hovered day, remembered with the range it belongs to so a range change clears it.
@@ -71,6 +73,16 @@ export function PriceChart({ points, range, events = [] }: PriceChartProps) {
   const marks = events
     .map((e) => ({ ...e, t: Date.parse(e.date) }))
     .filter((e) => e.t >= t0 && e.t <= t1)
+  // Which markers get a text label: not minor patches, and only where the previous label has ended.
+  const labelled = new Set<number>()
+  let lastEnd = -Infinity
+  marks.forEach((m, i) => {
+    const x = xOf(m.t)
+    if (m.type !== 'minor' && x >= lastEnd) {
+      labelled.add(i)
+      lastEnd = x + 12 + m.label.length * 7
+    }
+  })
 
   const nearest = (px: number) => {
     const t = t0 + ((px - M.left) / innerW) * (t1 - t0)
@@ -132,26 +144,34 @@ export function PriceChart({ points, range, events = [] }: PriceChartProps) {
           </text>
         ))}
 
-        {marks.map((m) => {
-          // Labels near the right edge go on the left of their line so they aren't cut off.
-          const flip = xOf(m.t) + 8 + m.label.length * 7 > width - M.right
+        {marks.map((m, i) => {
+          // Minor patches get a faint line only. Big updates get a label, unless the last
+          // label is too close, so a busy month stays readable.
+          const x = xOf(m.t)
+          const showLabel = labelled.has(i)
+          const flip = x + 8 + m.label.length * 7 > width - M.right
           return (
             <g key={`${m.date}-${m.label}`}>
-              <line className="event-line" x1={xOf(m.t)} x2={xOf(m.t)} y1={M.top} y2={M.top + innerH} />
-              <text
-                className="event-label"
-                x={xOf(m.t) + (flip ? -4 : 4)}
-                y={M.top + 12}
-                textAnchor={flip ? 'end' : 'start'}
-              >
-                {m.label}
-              </text>
+              <line className={m.type === 'minor' ? 'event-line minor' : 'event-line'} x1={x} x2={x} y1={M.top} y2={M.top + innerH} />
+              {showLabel && (
+                <text className="event-label" x={x + (flip ? -4 : 4)} y={M.top + 12} textAnchor={flip ? 'end' : 'start'}>
+                  {m.label}
+                </text>
+              )}
             </g>
           )
         })}
 
         <path className="area" d={area} />
         <path className="line" d={line} />
+
+        {data
+          .filter((d) => flags.includes(d.date))
+          .map((d) => (
+            <circle key={`flag-${d.date}`} className="flag-dot" cx={xOf(d.t)} cy={yOf(d.price)} r={6}>
+              <title>Unusual move on {formatDay(d.date)}</title>
+            </circle>
+          ))}
 
         {h && (
           <g>
