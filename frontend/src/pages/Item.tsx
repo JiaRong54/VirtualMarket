@@ -6,6 +6,7 @@ import { RANGES, type Range } from '../lib/ranges'
 import { loadLatestSnapshot } from '../lib/api'
 import { formatCount, formatDay, formatPrice } from '../lib/format'
 import {
+  loadAnomalies,
   loadEvents,
   loadHistoryIndex,
   loadItemHistory,
@@ -20,6 +21,7 @@ interface Loaded {
   history: ItemHistory | null
   listing: PriceObservation | null
   events: UpdateEvent[]
+  flags: string[]
 }
 
 // One item: Steam sales history (Jerome's data) next to the current
@@ -37,16 +39,18 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
     const controller = new AbortController()
     const { signal } = controller
     ;(async () => {
-      const [index, snapshot, events] = await Promise.all([
+      const [index, snapshot, events, anomalies] = await Promise.all([
         loadHistoryIndex(signal, game),
         loadLatestSnapshot(signal, game),
         loadEvents(signal, game),
+        loadAnomalies(signal, game),
       ])
+      const flags = (anomalies?.flags ?? []).filter((f) => f.item_name === name).map((f) => f.date)
       const entry = index.find((e) => e.item_name === name)
       const history = entry ? await loadItemHistory(entry.file, signal, game) : null
       if (signal.aborted) return
       const listing = snapshot?.rows.find((r) => r.item_name === name) ?? null
-      setData({ name, history, listing, events })
+      setData({ name, history, listing, events, flags })
     })()
     return () => controller.abort()
   }, [name, game])
@@ -149,7 +153,7 @@ export function Item({ game = 'cs2' }: { game?: Game }) {
           </div>
         ) : (
           <>
-            <PriceChart points={points} range={range} events={loaded.events} />
+            <PriceChart points={points} range={range} events={loaded.events} flags={loaded.flags} />
             <p className="chart-note">
               One point per day, from Steam Community Market sale medians.
               {loaded.events.length === 0 && ' Game update markers appear once the update timeline is added.'}

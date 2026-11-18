@@ -29,6 +29,7 @@ export interface ItemHistory {
 export interface UpdateEvent {
   date: string // "2026-10-01"
   label: string
+  type?: string // major, case, operation, balance or minor
 }
 
 const BASE = './data'
@@ -62,4 +63,37 @@ export async function loadEvents(signal?: AbortSignal, game: Game = 'cs2'): Prom
 /** Link to an item's page. Names contain | and spaces, so they are encoded. */
 export function itemPath(name: string, game: Game = 'cs2'): string {
   return `${game === 'dota2' ? '/dota2' : ''}/item/${encodeURIComponent(name)}`
+}
+
+/** One unusual day, written by loader/flag_anomalies.py. */
+export interface AnomalyFlag {
+  item_name: string
+  file: string
+  date: string
+  before: number // cents, previous trading day
+  price: number // cents, the flagged day
+  change_pct: number
+  z: number // how many "normal daily moves" away this day was
+  sold: number
+  update: { date: string; label: string; type: string; days_after: number } | null
+}
+
+export interface AnomalyReport {
+  generated: string
+  settings: { window_days: number; threshold: number; min_sold: number; after_update_days: number }
+  summary: {
+    items: number
+    days_scored: number
+    flags: number
+    flags_near_update: number
+    share_flags_near_update: number
+    share_days_near_update: number
+    ratio: number | null
+  }
+  flags: AnomalyFlag[]
+}
+
+export async function loadAnomalies(signal?: AbortSignal, game: Game = 'cs2'): Promise<AnomalyReport | null> {
+  const data = await getJson<AnomalyReport>(`${BASE}${game === 'dota2' ? '/dota2' : '/csgo2'}/anomalies.json`, signal)
+  return data && Array.isArray(data.flags) && data.summary ? data : null
 }
